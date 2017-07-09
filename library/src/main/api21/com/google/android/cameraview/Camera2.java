@@ -169,6 +169,18 @@ class Camera2 extends CameraViewImpl {
 
     };
 
+    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener2
+            = new ImageReader.OnImageAvailableListener() {
+
+        @Override
+        public void onImageAvailable(ImageReader reader) {
+            try (Image image = reader.acquireNextImage()) {
+                //TODO
+                mCallback.onPreviewAvailable(null, ImageFormat.YUV_420_888);
+            }
+        }
+
+    };
 
     private String mCameraId;
 
@@ -181,6 +193,7 @@ class Camera2 extends CameraViewImpl {
     CaptureRequest.Builder mPreviewRequestBuilder;
 
     private ImageReader mImageReader;
+    private ImageReader previewmImageReader;
 
     private final SizeMap mPreviewSizes = new SizeMap();
 
@@ -231,6 +244,10 @@ class Camera2 extends CameraViewImpl {
         if (mImageReader != null) {
             mImageReader.close();
             mImageReader = null;
+        }
+        if (previewmImageReader != null) {
+            previewmImageReader.close();
+            previewmImageReader = null;
         }
     }
 
@@ -451,6 +468,19 @@ class Camera2 extends CameraViewImpl {
         mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                 ImageFormat.JPEG, /* maxImages */ 2);
         mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, null);
+
+        preparePreviewImageReader();
+    }
+
+    private void preparePreviewImageReader() {
+        if (previewmImageReader != null) {
+            previewmImageReader.close();
+        }
+
+        Size previewSize = chooseOptimalSize();
+        previewmImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(),
+                ImageFormat.YUV_420_888, /* maxImages */ 2);
+        previewmImageReader.setOnImageAvailableListener(mOnImageAvailableListener2, null);
     }
 
     /**
@@ -471,17 +501,21 @@ class Camera2 extends CameraViewImpl {
      * <p>The result will be continuously processed in {@link #mSessionCallback}.</p>
      */
     void startCaptureSession() {
-        if (!isCameraOpened() || !mPreview.isReady() || mImageReader == null) {
+        if (!isCameraOpened() || !mPreview.isReady() || mImageReader == null
+                || previewmImageReader == null) {
             return;
         }
+
         Size previewSize = chooseOptimalSize();
         mPreview.setBufferSize(previewSize.getWidth(), previewSize.getHeight());
         Surface surface = mPreview.getSurface();
         try {
             mPreviewRequestBuilder = mCamera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mPreviewRequestBuilder.addTarget(surface);
-            mCamera.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()),
-                    mSessionCallback, null);
+            mPreviewRequestBuilder.addTarget(previewmImageReader.getSurface());
+
+            mCamera.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface(),
+                    previewmImageReader.getSurface()), mSessionCallback, null);
         } catch (CameraAccessException e) {
             throw new RuntimeException("Failed to start camera session");
         }

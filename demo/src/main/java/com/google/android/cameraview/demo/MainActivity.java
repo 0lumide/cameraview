@@ -277,6 +277,10 @@ public class MainActivity extends AppCompatActivity implements
             });
         }
 
+        public void onPreviewAvailable(CameraView cameraView, byte[] data, int format) {
+            Log.d(TAG, "onPreviewAvailable");
+        }
+
     };
 
     public static class ConfirmationDialogFragment extends DialogFragment {

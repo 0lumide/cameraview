@@ -449,6 +449,13 @@ public class CameraView extends FrameLayout {
             }
         }
 
+        @Override
+        public void onPreviewAvailable(byte[] data, int format) {
+            for (Callback callback : mCallbacks) {
+                callback.onPreviewAvailable(CameraView.this, data, format);
+            }
+        }
+
         public void reserveRequestLayoutOnOpen() {
             mRequestLayoutOnOpen = true;
         }
@@ -535,6 +542,15 @@ public class CameraView extends FrameLayout {
          */
         public void onPictureTaken(CameraView cameraView, byte[] data) {
         }
+
+        /**
+         * Called when a preview frame is available.
+         *
+         * @param cameraView The associated {@link CameraView}.
+         * @param data       the frame data.
+         * @param format the format of the frame data. see {@link android.graphics.ImageFormat}
+         */
+        public abstract void onPreviewAvailable(CameraView cameraView, byte[] data, int format);
     }
 
 }

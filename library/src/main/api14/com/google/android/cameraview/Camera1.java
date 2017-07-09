@@ -17,6 +17,7 @@
 package com.google.android.cameraview;
 
 import android.annotation.SuppressLint;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
@@ -115,15 +116,27 @@ class Camera1 extends CameraViewImpl {
                     mCamera.stopPreview();
                 }
                 mCamera.setPreviewDisplay(mPreview.getSurfaceHolder());
+                setPreviewCallback();
                 if (needsToStopPreview) {
                     mCamera.startPreview();
                 }
             } else {
                 mCamera.setPreviewTexture((SurfaceTexture) mPreview.getSurfaceTexture());
+                setPreviewCallback();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void setPreviewCallback() {
+        mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                //TODO
+                mCallback.onPreviewAvailable(data, ImageFormat.NV21);
+            }
+        });
     }
 
     @Override
@@ -376,6 +389,7 @@ class Camera1 extends CameraViewImpl {
 
     private void releaseCamera() {
         if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
             mCallback.onCameraClosed();
