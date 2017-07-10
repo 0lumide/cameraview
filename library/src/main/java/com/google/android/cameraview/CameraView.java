@@ -550,7 +550,8 @@ public class CameraView extends FrameLayout {
          * @param data       the frame data.
          * @param format the format of the frame data. see {@link android.graphics.ImageFormat}
          */
-        public abstract void onPreviewAvailable(CameraView cameraView, byte[] data, int format);
+        public void onPreviewAvailable(CameraView cameraView, byte[] data, int format) {
+        }
     }
 
 }
