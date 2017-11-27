@@ -343,7 +343,7 @@ class Camera1 extends CameraViewImpl {
 
         // Always re-apply camera parameters
         // Largest picture size in this ratio
-        final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
+        final Size pictureSize = chooseOptimalSize(mPictureSizes.sizes(mAspectRatio));
         if (mShowingPreview) {
             mCamera.stopPreview();
         }
